@@ -1547,23 +1547,23 @@ dictionary RTCEncodingOptions {
 [Exposed=Window]
 interface RTCDecoderStateChangeEvent : Event {
   constructor(DOMString type, RTCDecoderStateChangeEventInit eventInitDict);
-  readonly attribute unsigned long rtpTimestamp;
+  readonly attribute unsigned long firstDecodedRtpTimestamp;
 };
 
 dictionary RTCDecoderStateChangeEventInit : EventInit {
-  required unsigned long rtpTimestamp;
+  required unsigned long firstDecodedRtpTimestamp;
 };
 
 [Exposed=Window]
 interface RTCDecoderErrorEvent : Event {
   constructor(DOMString type, RTCDecoderErrorEventInit eventInitDict);
   [SameObject] readonly attribute DOMException error;
-  readonly attribute unsigned long? rtpTimestamp;
+  readonly attribute unsigned long? lastDecodedRtpTimestamp;
 };
 
 dictionary RTCDecoderErrorEventInit : EventInit {
   required DOMException error;
-  unsigned long? rtpTimestamp = null;
+  unsigned long? lastDecodedRtpTimestamp = null;
 };</pre>
 
     <section id="rtcrtpreceiver-decoder-event-attributes">
@@ -1608,8 +1608,9 @@ dictionary RTCDecoderErrorEventInit : EventInit {
           <dd>
             <p>
               The constructor initializes a new {{RTCDecoderStateChangeEvent}} whose event type is
-              <var>type</var> and whose {{RTCDecoderStateChangeEvent/rtpTimestamp}} attribute is initialized
-              from <var>eventInitDict</var>.{{RTCDecoderStateChangeEventInit/rtpTimestamp}}.
+              <var>type</var> and whose {{RTCDecoderStateChangeEvent/firstDecodedRtpTimestamp}} attribute is
+              initialized from
+              <var>eventInitDict</var>.{{RTCDecoderStateChangeEventInit/firstDecodedRtpTimestamp}}.
             </p>
           </dd>
         </dl>
@@ -1619,7 +1620,8 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         <dl data-link-for="RTCDecoderStateChangeEvent" data-dfn-for="RTCDecoderStateChangeEvent"
           class="attributes">
           <dt>
-            <dfn>rtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long</span>, readonly
+            <dfn>firstDecodedRtpTimestamp</dfn> of type
+            <span class="idlAttrType">unsigned long</span>, readonly
           </dt>
           <dd>
             <p>
@@ -1636,11 +1638,13 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         <dl data-link-for="RTCDecoderStateChangeEventInit" data-dfn-for="RTCDecoderStateChangeEventInit"
           class="dictionary-members">
           <dt>
-            <dfn>rtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long</span>, required
+            <dfn>firstDecodedRtpTimestamp</dfn> of type
+            <span class="idlAttrType">unsigned long</span>, required
           </dt>
           <dd>
             <p>
-              The RTP timestamp associated with the decoder state change.
+              The RTP timestamp of the first frame successfully decoded using the new codec or decoder
+              implementation.
             </p>
           </dd>
         </dl>
@@ -1665,8 +1669,8 @@ dictionary RTCDecoderErrorEventInit : EventInit {
               The constructor initializes a new {{RTCDecoderErrorEvent}} whose event type is
               <var>type</var>, whose {{RTCDecoderErrorEvent/error}} attribute is initialized from
               <var>eventInitDict</var>.{{RTCDecoderErrorEventInit/error}}, and whose
-              {{RTCDecoderErrorEvent/rtpTimestamp}} attribute is initialized from
-              <var>eventInitDict</var>.{{RTCDecoderErrorEventInit/rtpTimestamp}}.
+              {{RTCDecoderErrorEvent/lastDecodedRtpTimestamp}} attribute is initialized from
+              <var>eventInitDict</var>.{{RTCDecoderErrorEventInit/lastDecodedRtpTimestamp}}.
             </p>
           </dd>
         </dl>
@@ -1683,13 +1687,14 @@ dictionary RTCDecoderErrorEventInit : EventInit {
             </p>
           </dd>
           <dt>
-            <dfn>rtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long?</span>, readonly
+            <dfn>lastDecodedRtpTimestamp</dfn> of type
+            <span class="idlAttrType">unsigned long?</span>, readonly
           </dt>
           <dd>
             <p>
-              The RTP timestamp of the encoded frame associated with the failure, or <code>null</code>
-              if the failure cannot be associated with a particular frame. The timestamp of the last
-              successfully decoded frame MUST NOT be used as a substitute.
+              The RTP timestamp of the most recent frame successfully decoded before the receiver entered
+              the terminal decoding-failure state, or <code>null</code> if the receiver had not
+              successfully decoded a frame.
             </p>
           </dd>
         </dl>
@@ -1709,12 +1714,14 @@ dictionary RTCDecoderErrorEventInit : EventInit {
             </p>
           </dd>
           <dt>
-            <dfn>rtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long?</span>,
+            <dfn>lastDecodedRtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long?</span>,
             defaulting to <code>null</code>
           </dt>
           <dd>
             <p>
-              The RTP timestamp associated with the failure, if any.
+              The RTP timestamp of the most recent frame successfully decoded before the receiver entered
+              the terminal decoding-failure state, or <code>null</code> if the receiver had not
+              successfully decoded a frame.
             </p>
           </dd>
         </dl>
@@ -1737,6 +1744,13 @@ dictionary RTCDecoderErrorEventInit : EventInit {
           <p>
             <dfn data-dfn-for="RTCRtpReceiver">{{RTCRtpReceiver/[[LastDecodedCodec]]}}</dfn>, initialized
             to <code>null</code>, identifies the codec of the last successfully decoded frame.
+          </p>
+        </li>
+        <li>
+          <p>
+            <dfn data-dfn-for="RTCRtpReceiver">{{RTCRtpReceiver/[[LastDecodedRtpTimestamp]]}}</dfn>, an
+            unsigned long or <code>null</code>, initialized to <code>null</code>, records the RTP timestamp
+            of the receiver's most recently successfully decoded video frame.
           </p>
         </li>
         <li>
@@ -1766,8 +1780,8 @@ dictionary RTCDecoderErrorEventInit : EventInit {
       <p>
         Whenever an {{RTCRtpReceiver}} successfully decodes a frame, the [= user agent =] MUST
         <dfn data-lt="process a successfully decoded frame">process the successfully decoded frame</dfn>,
-        given the receiver, the frame's codec, decoder implementation, and RTP timestamp, by running the
-        following steps:
+        given the receiver, the frame's codec, decoder implementation, and RTP timestamp
+        |firstDecodedRtpTimestamp|, by running the following steps:
       </p>
       <ol class="algorithm">
         <li>
@@ -1787,6 +1801,12 @@ dictionary RTCDecoderErrorEventInit : EventInit {
             </li>
             <li>
               <p>Set |receiver|.{{RTCRtpReceiver/[[LastDecodedCodec]]}} to |codec|.</p>
+            </li>
+            <li>
+              <p>
+                Set |receiver|.{{RTCRtpReceiver/[[LastDecodedRtpTimestamp]]}} to
+                |firstDecodedRtpTimestamp|.
+              </p>
             </li>
             <li>
               <p>Set |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} to <code>false</code>.</p>
@@ -1811,6 +1831,12 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         </li>
         <li>
           <p>Set |receiver|.{{RTCRtpReceiver/[[LastDecodedCodec]]}} to |codec|.</p>
+        </li>
+        <li>
+          <p>
+            Set |receiver|.{{RTCRtpReceiver/[[LastDecodedRtpTimestamp]]}} to
+            |firstDecodedRtpTimestamp|.
+          </p>
         </li>
         <li>
           <p>Set |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} to <code>false</code>.</p>
@@ -1849,7 +1875,8 @@ dictionary RTCDecoderErrorEventInit : EventInit {
           <p>
             [= Queue a task =] on the [= networking task source =] to [= fire an event =] named
             {{RTCRtpReceiver/decoderstatechange}} at |receiver|, using {{RTCDecoderStateChangeEvent}}, with
-            the {{RTCDecoderStateChangeEvent/rtpTimestamp}} attribute initialized to |rtpTimestamp|.
+            the {{RTCDecoderStateChangeEvent/firstDecodedRtpTimestamp}} attribute initialized to
+            |firstDecodedRtpTimestamp|.
           </p>
         </li>
       </ol>
@@ -1872,8 +1899,9 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         When hardware exposure becomes allowed again, these steps wait for a successfully decoded frame
         before comparing the decoder implementation used to decode that frame with
         {{RTCRtpReceiver/[[LastExposedDecoderImplementation]]}}. If they differ, exactly one
-        {{RTCRtpReceiver/decoderstatechange}} event is fired using that frame's RTP timestamp.
-        Intermediate implementation changes and their timing are not revealed.
+        {{RTCRtpReceiver/decoderstatechange}} event is fired. Its
+        {{RTCDecoderStateChangeEvent/firstDecodedRtpTimestamp}} is the RTP timestamp of that first
+        successfully decoded frame. Intermediate implementation changes and their timing are not revealed.
       </p>
       <p class="note">
         The optional-receiver input to
@@ -1889,8 +1917,7 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         When an {{RTCRtpReceiver}} enters a terminal decoding-failure state after the [= user agent =] is
         unable to recover internally or successfully fall back to another decoder, the [= user agent =]
         MUST <dfn data-lt="report a terminal decoder error">report the terminal decoder error</dfn>, given
-        the receiver and an RTP timestamp that is <code>null</code> unless the failure can be associated
-        with a particular encoded frame, by running the following steps:
+        the receiver, by running the following steps:
       </p>
       <ol class="algorithm">
         <li>
@@ -1910,6 +1937,12 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         </li>
         <li>
           <p>
+            Let |lastDecodedRtpTimestamp| be
+            |receiver|.{{RTCRtpReceiver/[[LastDecodedRtpTimestamp]]}}.
+          </p>
+        </li>
+        <li>
+          <p>
             [= Queue a task =] on the [= networking task source =] to run the following steps:
           </p>
           <ol>
@@ -1923,8 +1956,8 @@ dictionary RTCDecoderErrorEventInit : EventInit {
               <p>
                 [= Fire an event =] named {{RTCRtpReceiver/decodererror}} at |receiver|, using
                 {{RTCDecoderErrorEvent}}, with the {{RTCDecoderErrorEvent/error}} attribute initialized to
-                |error| and the {{RTCDecoderErrorEvent/rtpTimestamp}} attribute initialized to
-                |rtpTimestamp|.
+                |error| and the {{RTCDecoderErrorEvent/lastDecodedRtpTimestamp}} attribute initialized to
+                |lastDecodedRtpTimestamp|.
               </p>
             </li>
           </ol>
@@ -1951,15 +1984,14 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         Codec changes are not hardware-gated because the active codec is already available through
         unprotected WebRTC statistics. Decoder implementation changes use the same hardware-exposure gate
         as {{RTCInboundRtpStreamStats/decoderImplementation}} and
-        {{RTCInboundRtpStreamStats/powerEfficientDecoder}}. Protected changes that occur while exposure is
-        unavailable are not replayed; coalescing reveals only the receiver's current eligible state after
-        a successfully decoded frame.
+        {{RTCInboundRtpStreamStats/powerEfficientDecoder}}; protected changes that occur while exposure is
+        unavailable are not replayed.
       </p>
       <p>
-        {{RTCRtpReceiver/decodererror}} improves the timing and certainty with which an application can
-        detect a terminal media failure, but exposes only a generic error and an optional RTP timestamp.
-        These APIs do not expose detailed decoder capabilities, decoder or hardware identities, error
-        histories, hidden-change counts, or implementation-specific failure details.
+        {{RTCRtpReceiver/decodererror}} provides a prompt, direct indication of a terminal failure that is
+        otherwise observable or inferable. It exposes only a generic error and the nullable RTP timestamp
+        of the last successfully decoded frame. These events do not expose decoder or hardware identity,
+        implementation-specific error details, hidden-change histories, or failure counts.
       </p>
     </section>
   </section>
