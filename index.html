@@ -1542,28 +1542,6 @@ dictionary RTCEncodingOptions {
     <pre class="idl">partial interface RTCRtpReceiver {
   attribute EventHandler ondecoderstatechange;
   attribute EventHandler ondecodererror;
-};
-
-[Exposed=Window]
-interface RTCDecoderStateChangeEvent : Event {
-  constructor(DOMString type, RTCDecoderStateChangeEventInit eventInitDict);
-  readonly attribute unsigned long firstDecodedRtpTimestamp;
-};
-
-dictionary RTCDecoderStateChangeEventInit : EventInit {
-  required unsigned long firstDecodedRtpTimestamp;
-};
-
-[Exposed=Window]
-interface RTCDecoderErrorEvent : Event {
-  constructor(DOMString type, RTCDecoderErrorEventInit eventInitDict);
-  [SameObject] readonly attribute DOMException error;
-  readonly attribute unsigned long? lastDecodedRtpTimestamp;
-};
-
-dictionary RTCDecoderErrorEventInit : EventInit {
-  required DOMException error;
-  unsigned long? lastDecodedRtpTimestamp = null;
 };</pre>
 
     <section id="rtcrtpreceiver-decoder-event-attributes">
@@ -1598,6 +1576,13 @@ dictionary RTCDecoderErrorEventInit : EventInit {
         The {{RTCRtpReceiver/decoderstatechange}} event uses the
         {{RTCDecoderStateChangeEvent}} interface.
       </p>
+      <div>
+        <pre class="idl">[Exposed=Window]
+interface RTCDecoderStateChangeEvent : Event {
+  constructor(DOMString type, RTCDecoderStateChangeEventInit eventInitDict);
+  readonly attribute unsigned long firstDecodedRtpTimestamp;
+};</pre>
+      </div>
       <section id="rtcdecoderstatechangeevent-constructors">
         <h4>Constructors</h4>
         <dl data-link-for="RTCDecoderStateChangeEvent" data-dfn-for="RTCDecoderStateChangeEvent"
@@ -1631,24 +1616,29 @@ dictionary RTCDecoderErrorEventInit : EventInit {
           </dd>
         </dl>
       </section>
-      <section id="rtcdecoderstatechangeeventinit">
-        <h4>
-          Dictionary <dfn>RTCDecoderStateChangeEventInit</dfn> Members
-        </h4>
-        <dl data-link-for="RTCDecoderStateChangeEventInit" data-dfn-for="RTCDecoderStateChangeEventInit"
-          class="dictionary-members">
-          <dt>
-            <dfn>firstDecodedRtpTimestamp</dfn> of type
-            <span class="idlAttrType">unsigned long</span>, required
-          </dt>
-          <dd>
-            <p>
-              The RTP timestamp of the first frame successfully decoded using the new codec or decoder
-              implementation.
-            </p>
-          </dd>
-        </dl>
-      </section>
+      <div>
+        <pre class="idl">dictionary RTCDecoderStateChangeEventInit : EventInit {
+  required unsigned long firstDecodedRtpTimestamp;
+};</pre>
+        <section id="rtcdecoderstatechangeeventinit">
+          <h4>
+            Dictionary <dfn>RTCDecoderStateChangeEventInit</dfn> Members
+          </h4>
+          <dl data-link-for="RTCDecoderStateChangeEventInit" data-dfn-for="RTCDecoderStateChangeEventInit"
+            class="dictionary-members">
+            <dt>
+              <dfn>firstDecodedRtpTimestamp</dfn> of type
+              <span class="idlAttrType">unsigned long</span>, required
+            </dt>
+            <dd>
+              <p>
+                The RTP timestamp of the first frame successfully decoded using the new codec or decoder
+                implementation.
+              </p>
+            </dd>
+          </dl>
+        </section>
+      </div>
     </section>
 
     <section id="rtcdecodererrorevent">
@@ -1658,6 +1648,14 @@ dictionary RTCDecoderErrorEventInit : EventInit {
       <p>
         The {{RTCRtpReceiver/decodererror}} event uses the {{RTCDecoderErrorEvent}} interface.
       </p>
+      <div>
+        <pre class="idl">[Exposed=Window]
+interface RTCDecoderErrorEvent : Event {
+  constructor(DOMString type, RTCDecoderErrorEventInit eventInitDict);
+  [SameObject] readonly attribute DOMException error;
+  readonly attribute unsigned long? lastDecodedRtpTimestamp;
+};</pre>
+      </div>
       <section id="rtcdecodererrorevent-constructors">
         <h4>Constructors</h4>
         <dl data-link-for="RTCDecoderErrorEvent" data-dfn-for="RTCDecoderErrorEvent" class="constructors">
@@ -1699,33 +1697,39 @@ dictionary RTCDecoderErrorEventInit : EventInit {
           </dd>
         </dl>
       </section>
-      <section id="rtcdecodererroreventinit">
-        <h4>
-          Dictionary <dfn>RTCDecoderErrorEventInit</dfn> Members
-        </h4>
-        <dl data-link-for="RTCDecoderErrorEventInit" data-dfn-for="RTCDecoderErrorEventInit"
-          class="dictionary-members">
-          <dt>
-            <dfn>error</dfn> of type <span class="idlAttrType">{{DOMException}}</span>, required
-          </dt>
-          <dd>
-            <p>
-              The error associated with the terminal decoding failure.
-            </p>
-          </dd>
-          <dt>
-            <dfn>lastDecodedRtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long?</span>,
-            defaulting to <code>null</code>
-          </dt>
-          <dd>
-            <p>
-              The RTP timestamp of the most recent frame successfully decoded before the receiver entered
-              the terminal decoding-failure state, or <code>null</code> if the receiver had not
-              successfully decoded a frame.
-            </p>
-          </dd>
-        </dl>
-      </section>
+      <div>
+        <pre class="idl">dictionary RTCDecoderErrorEventInit : EventInit {
+  required DOMException error;
+  unsigned long? lastDecodedRtpTimestamp = null;
+};</pre>
+        <section id="rtcdecodererroreventinit">
+          <h4>
+            Dictionary <dfn>RTCDecoderErrorEventInit</dfn> Members
+          </h4>
+          <dl data-link-for="RTCDecoderErrorEventInit" data-dfn-for="RTCDecoderErrorEventInit"
+            class="dictionary-members">
+            <dt>
+              <dfn>error</dfn> of type <span class="idlAttrType">{{DOMException}}</span>, required
+            </dt>
+            <dd>
+              <p>
+                The error associated with the terminal decoding failure.
+              </p>
+            </dd>
+            <dt>
+              <dfn>lastDecodedRtpTimestamp</dfn> of type <span class="idlAttrType">unsigned long?</span>,
+              defaulting to <code>null</code>
+            </dt>
+            <dd>
+              <p>
+                The RTP timestamp of the most recent frame successfully decoded before the receiver entered
+                the terminal decoding-failure state, or <code>null</code> if the receiver had not
+                successfully decoded a frame.
+              </p>
+            </dd>
+          </dl>
+        </section>
+      </div>
     </section>
 
     <section id="rtcrtpreceiver-decoder-event-state">
