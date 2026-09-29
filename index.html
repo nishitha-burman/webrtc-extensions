@@ -1530,7 +1530,7 @@ dictionary RTCEncodingOptions {
     </h2>
     <p>
       The {{RTCRtpReceiver}} interface is defined in [[WEBRTC]]. This document extends video receivers
-      with events that report changes to the decoder state and terminal decoding failures. Applications
+      with events that report changes to the decoder state and decoding failures. Applications
       can call {{RTCRtpReceiver/getStats()}} after receiving an event to inspect the receiver's current
       codec and, when permitted, decoder implementation.
     </p>
@@ -1681,7 +1681,7 @@ interface RTCDecoderErrorEvent : Event {
           </dt>
           <dd>
             <p>
-              A generic {{"EncodingError"}} {{DOMException}} describing a terminal decoding failure.
+              A generic {{"EncodingError"}} {{DOMException}} describing a decoding failure.
             </p>
           </dd>
           <dt>
@@ -1691,8 +1691,8 @@ interface RTCDecoderErrorEvent : Event {
           <dd>
             <p>
               The RTP timestamp of the most recent frame successfully decoded before the receiver entered
-              the terminal decoding-failure state, or <code>null</code> if the receiver had not
-              successfully decoded a frame.
+              the decoding-failure state, or <code>null</code> if the receiver had not successfully
+              decoded a frame.
             </p>
           </dd>
         </dl>
@@ -1713,7 +1713,7 @@ interface RTCDecoderErrorEvent : Event {
             </dt>
             <dd>
               <p>
-                The error associated with the terminal decoding failure.
+                The error associated with the decoding failure.
               </p>
             </dd>
             <dt>
@@ -1723,8 +1723,8 @@ interface RTCDecoderErrorEvent : Event {
             <dd>
               <p>
                 The RTP timestamp of the most recent frame successfully decoded before the receiver entered
-                the terminal decoding-failure state, or <code>null</code> if the receiver had not
-                successfully decoded a frame.
+                the decoding-failure state, or <code>null</code> if the receiver had not successfully
+                decoded a frame.
               </p>
             </dd>
           </dl>
@@ -1766,9 +1766,8 @@ interface RTCDecoderErrorEvent : Event {
         </li>
         <li>
           <p>
-            <dfn data-dfn-for="RTCRtpReceiver">{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}}</dfn>, a
-            boolean initialized to <code>false</code>, records whether the receiver is in a terminal
-            decoding-failure state.
+            <dfn data-dfn-for="RTCRtpReceiver">{{RTCRtpReceiver/[[InDecoderFailure]]}}</dfn>, a boolean
+            initialized to <code>false</code>, records whether the receiver is in a decoding-failure state.
           </p>
         </li>
       </ul>
@@ -1813,7 +1812,7 @@ interface RTCDecoderErrorEvent : Event {
               </p>
             </li>
             <li>
-              <p>Set |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} to <code>false</code>.</p>
+              <p>Set |receiver|.{{RTCRtpReceiver/[[InDecoderFailure]]}} to <code>false</code>.</p>
             </li>
             <li>
               <p>
@@ -1843,7 +1842,7 @@ interface RTCDecoderErrorEvent : Event {
           </p>
         </li>
         <li>
-          <p>Set |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} to <code>false</code>.</p>
+          <p>Set |receiver|.{{RTCRtpReceiver/[[InDecoderFailure]]}} to <code>false</code>.</p>
         </li>
         <li>
           <p>Let |implementationChanged:boolean| be <code>false</code>.</p>
@@ -1915,13 +1914,13 @@ interface RTCDecoderErrorEvent : Event {
       </p>
     </section>
 
-    <section id="rtcrtpreceiver-report-terminal-decoder-error">
-      <h3>Reporting a terminal decoder error</h3>
+    <section id="rtcrtpreceiver-report-decoder-error">
+      <h3>Reporting a decoder error</h3>
       <p>
-        When an {{RTCRtpReceiver}} enters a terminal decoding-failure state after the [= user agent =] is
-        unable to recover internally or successfully fall back to another decoder, the [= user agent =]
-        MUST <dfn data-lt="report a terminal decoder error">report the terminal decoder error</dfn>, given
-        the receiver, by running the following steps:
+        When an {{RTCRtpReceiver}} encounters a decoding failure after the [= user agent =] is unable to
+        recover internally or successfully fall back to another decoder, the [= user agent =] MUST
+        <dfn data-lt="report a decoder error">report the decoder error</dfn>, given the receiver, by
+        running the following steps:
       </p>
       <ol class="algorithm">
         <li>
@@ -1932,12 +1931,12 @@ interface RTCDecoderErrorEvent : Event {
         </li>
         <li>
           <p>
-            If |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} is <code>true</code>, abort these
+            If |receiver|.{{RTCRtpReceiver/[[InDecoderFailure]]}} is <code>true</code>, abort these
             steps.
           </p>
         </li>
         <li>
-          <p>Set |receiver|.{{RTCRtpReceiver/[[InTerminalDecoderFailure]]}} to <code>true</code>.</p>
+          <p>Set |receiver|.{{RTCRtpReceiver/[[InDecoderFailure]]}} to <code>true</code>.</p>
         </li>
         <li>
           <p>
@@ -1969,15 +1968,14 @@ interface RTCDecoderErrorEvent : Event {
       </ol>
       <p>
         The error name and message are intentionally generic. The {{RTCDecoderErrorEvent/error}} attribute
-        MUST NOT expose decoder-, driver-, platform-, device-, vendor-, hardware-, or resource-specific
-        details. A continuous terminal failure produces one event, not one event for every subsequently
-        dropped or undecodable frame. After
-        [= process a successfully decoded frame | processing a successfully decoded frame =] clears
-        {{RTCRtpReceiver/[[InTerminalDecoderFailure]]}}, a later terminal failure can produce another
-        event.
+        MUST NOT expose decoder-, driver-, platform-, device-, vendor-, hardware-, resource-, or
+        implementation-specific details. A continuous decoding failure produces one event, not one event
+        for every subsequently dropped or undecodable frame. After the [= user agent =] next
+        [= process a successfully decoded frame | successfully decodes a frame =], a subsequent decoding
+        failure can produce another event.
       </p>
       <p>
-        [= Report a terminal decoder error | Reporting a terminal decoder error =] is not conditional on
+        [= Report a decoder error | Reporting a decoder error =] is not conditional on
         [= hardware exposure is allowed for a receiver =].
       </p>
     </section>
@@ -1992,7 +1990,7 @@ interface RTCDecoderErrorEvent : Event {
         unavailable are not replayed.
       </p>
       <p>
-        {{RTCRtpReceiver/decodererror}} provides a prompt, direct indication of a terminal failure that is
+        {{RTCRtpReceiver/decodererror}} provides a prompt, direct indication of a decoding failure that is
         otherwise observable or inferable. It exposes only a generic error and the nullable RTP timestamp
         of the last successfully decoded frame. These events do not expose decoder or hardware identity,
         implementation-specific error details, hidden-change histories, or failure counts.
@@ -2232,8 +2230,8 @@ interface RTCDecoderErrorEvent : Event {
           <th scope=row><dfn data-dfn-for="RTCRtpReceiver" data-dfn-type=event>decodererror</dfn></th>
           <td>{{RTCDecoderErrorEvent}}</td>
           <td>
-            The receiver entered a terminal decoding-failure state after internal recovery and fallback
-            were unsuccessful.
+            The receiver encountered a decoding failure after internal recovery and fallback were
+            unsuccessful.
           </td>
         </tr>
       </tbody>
