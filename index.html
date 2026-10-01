@@ -1534,11 +1534,6 @@ dictionary RTCEncodingOptions {
       can call {{RTCRtpReceiver/getStats()}} after receiving an event to inspect the receiver's current
       codec and, when permitted, decoder implementation.
     </p>
-    <p>
-      For this section, <dfn>hardware exposure is allowed for a receiver</dfn> if running
-      <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
-      allowed</a> with that receiver as the optional receiver input returns <code>true</code>.
-    </p>
     <pre class="idl">partial interface RTCRtpReceiver {
   attribute EventHandler ondecoderstatechange;
   attribute EventHandler ondecodererror;
@@ -1783,8 +1778,9 @@ interface RTCDecoderErrorEvent : Event {
       <p>
         Whenever an {{RTCRtpReceiver}} successfully decodes a frame, the [= user agent =] MUST
         <dfn data-lt="process a successfully decoded frame">process the successfully decoded frame</dfn>,
-        given the receiver, the frame's codec, decoder implementation, and RTP timestamp
-        |firstDecodedRtpTimestamp|, by running the following steps:
+        given an {{RTCRtpReceiver}} |receiver|, the frame's codec |codec|, decoder implementation
+        |decoderImplementation|, and RTP timestamp |firstDecodedRtpTimestamp|, by running the following
+        steps:
       </p>
       <ol class="algorithm">
         <li>
@@ -1816,7 +1812,9 @@ interface RTCDecoderErrorEvent : Event {
             </li>
             <li>
               <p>
-                If [= hardware exposure is allowed for a receiver =] for |receiver|, set
+                If running
+                <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
+                allowed</a>, given |receiver|, returns <code>true</code>, set
                 |receiver|.{{RTCRtpReceiver/[[LastExposedDecoderImplementation]]}} to
                 |decoderImplementation|.
               </p>
@@ -1849,7 +1847,9 @@ interface RTCDecoderErrorEvent : Event {
         </li>
         <li>
           <p>
-            If [= hardware exposure is allowed for a receiver =] for |receiver|, run the following steps:
+            If running
+            <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
+            allowed</a>, given |receiver|, returns <code>true</code>, run the following steps:
           </p>
           <ol>
             <li>
@@ -1893,14 +1893,18 @@ interface RTCDecoderErrorEvent : Event {
         {{RTCRtpReceiver/decodererror}} event.
       </p>
       <p>
-        When [= hardware exposure is allowed for a receiver =] is false for |receiver|, changes to the
-        decoder implementation MUST NOT cause an event to be queued.
+        When running
+        <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
+        allowed</a>, given |receiver|, returns <code>false</code>, changes to the decoder implementation
+        MUST NOT cause an event to be queued.
         The [= user agent =] MUST NOT retain a history, timestamps, or count of such changes for later
         replay.
       </p>
       <p>
-        When hardware exposure becomes allowed again, these steps wait for a successfully decoded frame
-        before comparing the decoder implementation used to decode that frame with
+        When running
+        <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
+        allowed</a>, given |receiver|, returns <code>true</code> again, these steps wait for a successfully
+        decoded frame before comparing the decoder implementation used to decode that frame with
         {{RTCRtpReceiver/[[LastExposedDecoderImplementation]]}}. If they differ, exactly one
         {{RTCRtpReceiver/decoderstatechange}} event is fired. Its
         {{RTCDecoderStateChangeEvent/firstDecodedRtpTimestamp}} is the RTP timestamp of that first
@@ -1975,7 +1979,9 @@ interface RTCDecoderErrorEvent : Event {
       </p>
       <p>
         [= Report a decoder error | Reporting a decoder error =] is not conditional on
-        [= hardware exposure is allowed for a receiver =].
+        the result of running
+        <a data-cite="WEBRTC-STATS#dfn-exposing-hardware-is-allowed">check if hardware exposure is
+        allowed</a>, given |receiver|.
       </p>
     </section>
 
