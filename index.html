@@ -1529,10 +1529,17 @@ dictionary RTCEncodingOptions {
       {{RTCRtpReceiver}} decoder events
     </h2>
     <p>
-      The {{RTCRtpReceiver}} interface is defined in [[WEBRTC]]. This document extends video receivers
-      with events that report changes to the decoder state and decoding failures. Applications
-      can call {{RTCRtpReceiver/getStats()}} after receiving an event to inspect the receiver's current
-      codec and, when permitted, decoder implementation.
+      The {{RTCRtpReceiver}} interface defined in [[WEBRTC]] is modified to
+      inherit from {{EventTarget}}. This document extends video receivers
+      with events that report changes to the decoder state and decoding
+      failures. Applications can call {{RTCRtpReceiver/getStats()}} after
+      receiving an event to inspect the receiver's current codec and, when
+      permitted, decoder implementation.
+    </p>
+    <p class="note">
+      EventTarget inheritance applies to both audio and video receivers.
+      The decoder events defined in this section are dispatched only for
+      video receivers.
     </p>
     <pre class="idl">partial interface RTCRtpReceiver {
   attribute EventHandler ondecoderstatechange;
